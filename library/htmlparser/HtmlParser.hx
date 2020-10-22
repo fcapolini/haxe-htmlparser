@@ -15,14 +15,14 @@ class HtmlParser
 	static var reScript = "[<]\\s*script\\s*([^>]*)>([\\s\\S]*?)<\\s*/\\s*script\\s*>";
 	static var reStyle = "<\\s*style\\s*([^>]*)>([\\s\\S]*?)<\\s*/\\s*style\\s*>";
 	static var reElementOpen = "<\\s*(" + reNamespacedID + ")";
-	static var reAttr = reNamespacedID + "(?:\\s*=\\s*(?:'[^']*?'|\"[^\"]*?\"|[-_a-z0-9]+))?";
+	static var reAttr = reNamespacedID + "(?:\\s*=\\s*(?:'[^']*?'|\"[^\"]*?\"|`[^`]*?`|[-_a-z0-9]+))?";
 	static var reElementEnd = "(/)?\\s*>";
 	static var reElementClose = "<\\s*/\\s*(" + reNamespacedID + ")\\s*>";
 	static var reComment = "<!--[\\s\\S]*?-->";
 	
 	static var reMain = new EReg("(" + reCDATA + ")|(" + reScript + ")|(" + reStyle + ")|(" + reElementOpen + "((?:\\s+" + reAttr +")*)\\s*" + reElementEnd + ")|(" + reElementClose + ")|(" + reComment + ")", "ig");
 	
-	static var reParseAttrs = new EReg("(" + reNamespacedID + ")(?:\\s*=\\s*('[^']*'|\"[^\"]*\"|[-_a-z0-9]+))?" , "ig");
+	static var reParseAttrs = new EReg("(" + reNamespacedID + ")(?:\\s*=\\s*('[^']*'|\"[^\"]*\"|`[^`]*?`|[-_a-z0-9]+))?" , "ig");
 	
 	var tolerant : Bool;
 	var matches : Array<HtmlLexem>;
@@ -36,7 +36,7 @@ class HtmlParser
 	public function parse(str:String, tolerant=false) : Array<HtmlNode>
     {
 		this.tolerant = tolerant;
-		
+
 		matches = [];
 		var pos = 0; while (pos < str.length && reMain.matchSub(str, pos))
 		{
@@ -170,7 +170,7 @@ class HtmlParser
 		var tagLC = matches[i].tagOpenLC;
         var attrs = matches[i].attrs;
         var isWithClose = matches[i].tagEnd != null && matches[i].tagEnd != "" || isSelfClosingTag(tagLC);
-		
+
         var elem = newElement(tag, parseAttrs(attrs));
 		var closeTagLC = "";
         if (!isWithClose)
@@ -209,13 +209,13 @@ class HtmlParser
         {
 			var name = reParseAttrs.matched(1);
 			var value = reParseAttrs.matched(2);
-			
+
 			var quote : String = null;
 			var unescaped : String = null;
 			if (value != null)
 			{
 				quote = value.substr(0, 1);
-				if (quote == '"' || quote == "'")
+				if (quote == '"' || quote == "'" || quote == "`")
 				{
 					value = value.substr(1, value.length - 2);
 				}
