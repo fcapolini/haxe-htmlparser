@@ -209,6 +209,8 @@ class HtmlParser
         {
 			var name = reParseAttrs.matched(1);
 			var value = reParseAttrs.matched(2);
+			var p = reParseAttrs.matchedPos();
+			pos = p.pos + p.len;
 
 			var quote : String = null;
 			var unescaped : String = null;
@@ -221,6 +223,10 @@ class HtmlParser
 				}
 				else if (quote == "[")
 				{
+					while (str.charAt(pos) == ']') {
+						value += ']';
+						pos++;
+					}
 					value = value.substr(2, value.length - 4);
 				}
 				else
@@ -231,9 +237,6 @@ class HtmlParser
 			}
 			
 			attributes.push(new HtmlAttribute(name, unescaped, quote));
-			
-			var p = reParseAttrs.matchedPos();
-			pos = p.pos + p.len;
         }
 		
         return attributes;
